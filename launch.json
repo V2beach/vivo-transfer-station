@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug with LLDB",
+            "program": "${workspaceFolder}/con3",
+            "preLaunchTask": "Build with Clang"
+        }
+    ]
+}
+/*Check ~/code/Algorithm-exercise-vscode/readme, and question is HOW TO RELEASE
+{
+    "version":"0.2.0",
+    "configurations": [
+        {
+            "name": "clang++ - Build and debug active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "Build with Clang"
+        }
+    ]
+}
+*/
