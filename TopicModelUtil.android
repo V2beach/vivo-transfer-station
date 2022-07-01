@@ -1,0 +1,65 @@
+package com.example.topic_model_demo;
+
+import android.content.Context;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+
+public class TopicModelUtil {
+    //耦合测试版
+    public static native String stringFromJNI(String model_path);//为了不实例化对象直接调用方法
+
+    //模型变量尝试，只存指针可行吗？pointer of original Data Structure to Index
+    public static HashMap<Integer, Long> DS2Index = new HashMap<>();//其实short和Integer就行吧，直接用原来的不容易出bug
+
+    //读取model.vector和vocab.marisa以初始化topic model亦即Inference Engine，读取vocab.vector以初始化tokenizer
+    public static native int initTopicModelEngine(String model_path);
+
+    //推理，输入query，输出主题分布
+    public static native String[] topicDistributionInference(String query);//keywords就直接用java根据主题读文件就行了，100个为上限
+
+    //释放模型相关变量
+    public static native int releaseTopicModelEngine();
+
+    //将模型文件从assets拷贝到cache
+    public static String copyFromAssetsToCache(String modelPath, Context context) {
+
+        String newPath = context.getCacheDir() + "/" + modelPath;
+        File desDir = new File(newPath);
+        //context.getAssets().list(modelPath) 这样会移动所有文件，应该按需移动文件
+//        String[] files = {"hmmModel.utf8", dictTrie.get(require_code), stopWordsPath};
+        String[] files;
+        files = new String[]{"news_lda.model", "vocab_info.txt", "model.vector", "vocab.vector", "model.marisa", "vocab.marisa", "topic_sum.vector"//, "model_filtered.vector"
+                ,"model_filtered1.vector", "model_filtered2.vector", "model_filtered3.vector", "model_filtered4.vector", "model_filtered5.vector", "model_filtered6.vector"}; //hmm + required_trie
+
+        try {
+            if (!desDir.exists()) {
+                desDir.mkdir();
+            }
+            for (String fileName : files) {
+                InputStream stream = context.getAssets().open(modelPath + "/" + fileName);
+                OutputStream output = new BufferedOutputStream(new FileOutputStream(newPath + "/" + fileName));
+
+                byte data[] = new byte[1024];
+                int count;
+
+                while ((count = stream.read(data)) != -1) {
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                stream.close();
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return desDir.getPath();
+    }
+}

@@ -1,0 +1,66 @@
+package com.example.topic_model_demo;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+public class MainActivity extends AppCompatActivity {
+
+    // Used to load the 'native-lib' library on application startup.
+    static {
+//        System.loadLibrary("native-lib");
+        System.loadLibrary("lda");
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Example of a call to a native method
+
+        String model_path = TopicModelUtil.copyFromAssetsToCache("news",MainActivity.this);
+
+        TextView tv = findViewById(R.id.sample_text);
+//        tv.setText(TopicModelUtil.stringFromJNI(model_path));
+
+        long startTime = System.currentTimeMillis();
+        TopicModelUtil.initTopicModelEngine(model_path);
+        long endTime = System.currentTimeMillis();
+        System.out.println("初始化耗时为：" + (endTime-startTime) + "ms");
+
+        String query = "看了好多的评论,都说油耗高,本来挺喜欢的！但是又纠结了！吉利在这两年何谓风头无两,多个车型都占据国产车的半壁江山,也呈现出了和合资争雄的决心和能力。今天老司机谈一谈一款吉利的热车,sv博越！";
+        String[] ans;
+
+        startTime = System.currentTimeMillis();
+        ans = TopicModelUtil.topicDistributionInference(query);
+        endTime = System.currentTimeMillis();
+        System.out.println("推理新文档耗时为：" + (endTime-startTime) + "ms");
+
+        String display = "";
+        for (int i = 0; i < ans.length; i++){
+            display += ans[i] + "\n";
+        }
+        tv.setText(display);
+
+        TopicModelUtil.releaseTopicModelEngine();
+    }
+
+    /**
+     * A native method that is implemented by the 'native-lib' native library,
+     * which is packaged with this application.
+     */
+    //TopicModelUtil
+}
